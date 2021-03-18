@@ -373,7 +373,7 @@ def train_monte_carlo_tree(board, screen, clock, show=False):
     saving_rate = 1000
     counter = 1
     for i in range(int(training_cycles / saving_rate)):
-        with open("mcts.json", "r") as file:
+        with open("mcts1.json", "r") as file:
             tree = json.load(file)
             for j in range(saving_rate):
                 node = selection(tree["start"], board, screen, clock, show)
