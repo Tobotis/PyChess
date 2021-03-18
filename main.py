@@ -174,7 +174,7 @@ def main():
     # Keeps track of the highlighted squares on the board
     highlighted = []
     # Monte Carlo Tree training Mode
-    training_mode = False
+    training_mode = True
 
     # Train the Monte Carlo Tree
     if training_mode:

@@ -389,7 +389,7 @@ def train_monte_carlo_tree(board, screen, clock, show=False):
                 print(str(counter) + "/" + str(training_cycles))
                 counter += 1
         print("SAVED")
-        with open("mcts.json", "w") as file:
+        with open("mcts1.json", "w") as file:
             json.dump(tree, file, indent=8)
 
     most_explored = float("-inf")
