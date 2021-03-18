@@ -174,11 +174,11 @@ def main():
     # Keeps track of the highlighted squares on the board
     highlighted = []
     # Monte Carlo Tree training Mode
-    training_mode = True
+    training_mode = False
 
     # Train the Monte Carlo Tree
     if training_mode:
-        Ai.train_monte_carlo_tree(board, screen, clock)
+        Ai.train_monte_carlo_tree(board, screen, clock, False)
 
     # MAIN GAME LOOP
     while playing and not training_mode:

@@ -46,17 +46,14 @@ class Board:
         self.w_queen_castle = True
 
     # Makes a move;
-    # is_pseudo has to be true if the move isn´t a real move, but a move from the engine for calculation for example;
     # undo has to be true if the move should be deleted => do the move backwards
-    def make_move(self, move, is_pseudo=False, undo=False):
-        # Add the move in the move history if move is not pseudo
-        if not is_pseudo:
-            # Delete move if undo
-            if undo:
-                self.move_history.remove(move)
-            # Append move if not undo
-            else:
-                self.move_history.append(move)
+    def make_move(self, move, undo=False):
+        # Delete move if undo
+        if undo:
+            self.move_history.remove(move)
+        # Append move if not undo
+        else:
+            self.move_history.append(move)
 
         # Undo checkmate and stalemate
         if undo:

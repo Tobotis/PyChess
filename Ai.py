@@ -73,8 +73,9 @@ def get_value_of_board(board):
             elif piece == 11 or piece == 12:
                 value -= pawn_knight_map[i][j]
 
-    # REWARD CASTLING
+    # Iterate through moves in the past
     for move in board.move_history:
+        # REWARD CASTLING
         if move.is_castle and move.piece == 6:
             value += 25
         elif move.is_castle and move.piece == 16:
@@ -163,7 +164,7 @@ def find_min_max_alpha_beta(depth, moves, board, a, b, is_first, use_move_sortin
         # Iterate through all the moves for white
         for move in moves:
             # Make the move pseudo
-            board.make_move(move, is_pseudo=True)
+            board.make_move(move)
             # Create a new child node (with depth -1 => the depth get every time smaller, so sometime when it is
             # zero, it will return a value all the way up)
             evaluation = find_min_max_alpha_beta(depth - 1, board.get_legal_moves(), board, a, b, False)
@@ -175,7 +176,7 @@ def find_min_max_alpha_beta(depth, moves, board, a, b, is_first, use_move_sortin
                 if is_first:
                     best_move = move
             # Undo the pseudo move
-            board.make_move(move, is_pseudo=True, undo=True)
+            board.make_move(move, undo=True)
             # Set the alpha to the new max
             a = max(a, evaluation)
             # If beta is lower than alpha the rest of the tree is not important anymore, because there can not be a
@@ -197,7 +198,7 @@ def find_min_max_alpha_beta(depth, moves, board, a, b, is_first, use_move_sortin
         # Iterate through all the moves for black
         for move in moves:
             # Make the move pseudo
-            board.make_move(move, is_pseudo=True)
+            board.make_move(move,)
             # Create a new child node (with depth -1 => the depth get every time smaller, so sometime when it is
             # zero, it will return a value all the way up)
             evaluation = find_min_max_alpha_beta(depth - 1, board.get_legal_moves(), board, a, b, False)
@@ -209,7 +210,7 @@ def find_min_max_alpha_beta(depth, moves, board, a, b, is_first, use_move_sortin
                 if is_first:
                     best_move = move
             # Undo the pseudo move
-            board.make_move(move, is_pseudo=True, undo=True)
+            board.make_move(move, undo=True)
             # Set the beta to the new min
             b = min(b, evaluation)
             # If beta is lower than alpha the rest of the tree is not important anymore, because there can not be a
@@ -369,8 +370,8 @@ def train_monte_carlo_tree(board, screen, clock, show=False):
     p.display.flip()
     clock.tick(30)
 
-    training_cycles = 5000
-    saving_rate = 1000
+    training_cycles = 100
+    saving_rate = 50
     counter = 1
     for i in range(int(training_cycles / saving_rate)):
         with open("mcts1.json", "r") as file:
