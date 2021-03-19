@@ -8,7 +8,7 @@ import random
 import time
 import json
 
-# All openings, which are still possilble
+# All openings, which are still possible
 current_possible_openings = []
 
 
@@ -198,7 +198,7 @@ def find_min_max_alpha_beta(depth, moves, board, a, b, is_first, use_move_sortin
         # Iterate through all the moves for black
         for move in moves:
             # Make the move pseudo
-            board.make_move(move,)
+            board.make_move(move, )
             # Create a new child node (with depth -1 => the depth get every time smaller, so sometime when it is
             # zero, it will return a value all the way up)
             evaluation = find_min_max_alpha_beta(depth - 1, board.get_legal_moves(), board, a, b, False)
@@ -363,36 +363,52 @@ def move_to_notation(move):
 # Own Monte Carlo Tree Search
 # Main Function of the training
 def train_monte_carlo_tree(board, screen, clock, show=False):
-    load_images()
-    # Display the board based on the state, selected position and highlighted squares
-    display_board(board, screen, (), [])
-    # Pygame refresh
-    p.display.flip()
-    clock.tick(30)
-
+    # Prepare the board and the images if the training games should be shown
+    if show:
+        load_images()
+        # Display the board based on the state, selected position and highlighted squares
+        display_board(board, screen, (), [])
+        # Pygame refresh
+        p.display.flip()
+        clock.tick(30)
+    # Number of iterations of the training
     training_cycles = 100
+    # Saving rate (How often the file should be saved
     saving_rate = 50
+    # Iteration counter (for debug purposes)
     counter = 1
+    # Iterate through the saving iterations
     for i in range(int(training_cycles / saving_rate)):
+        # Open the file
         with open("mcts1.json", "r") as file:
+            # Load the tree
             tree = json.load(file)
+            # Iterate through training
             for j in range(saving_rate):
+                # Select the best node (based on ucb value)
                 node = selection(tree["start"], board, screen, clock, show)
                 print("Selection completed")
+                # Get the new expanded child
                 child_index = expansion(node, board)
                 print("Expansion completed")
                 new_node = node["children"][child_index]
+                # Simulate and get the result of the game
                 result = simulation(board, screen, clock, show)
                 print("Simulation completed")
+                # Update the parent values and win rates
                 backpropagation(result, tree["start"], new_node)
                 print("Backpropagation completed")
+                # Reset the board
                 board.reset_board()
+                # Update the counter
                 print(str(counter) + "/" + str(training_cycles))
                 counter += 1
-        print("SAVED")
+        # Save the file
         with open("mcts1.json", "w") as file:
             json.dump(tree, file, indent=8)
+        print("SAVED")
 
+    # DEBUG the first moves and their visits
     most_explored = float("-inf")
     highest_win_rate = float("-inf")
     move_with_best_win_rate = None
@@ -408,63 +424,95 @@ def train_monte_carlo_tree(board, screen, clock, show=False):
     print("Highest win rate is " + str(highest_win_rate) + " at move " + str(move_with_best_win_rate["move_history"]))
 
 
+# Takes a node and returns its ucb value
+# The value which decides how likely a node is visited next
 def ucb_val(node):
+    # First part: win rate + 10^-6 so there is no division error, when the node has not been visited yet => Exploitation
+    # Second part: the rate how often the node is visited compared to its parent => Exploration
+    # 1.4 = exploration rate (the higher the value is, the more is going to be explored)
     return (node["win"] / (node["visits"] + (10 ** -6))) + (1.4 * math.sqrt(
         math.log(node["parent_visits"] + 10 ** -6) / (node["visits"] + (10 ** -10))))
-    # return node["win"] + 2 * (
-    # math.sqrt(math.log(node["parent_visits"] + math.e + (10 ** -6)) / (node["visits"] + (10 ** -10))))
 
 
+# Takes a node and goes down the children (selects the best ucb val)
 def selection(node, board, screen, clock, show):
+    # Get the legal moves in current game state
     legal_moves = board.get_legal_moves()
-
+    # Check if the node is not the first (there would not be any move to make)
     if len(node["move_history"]) != 0:
+        # Get the move of the node
         move = notation_list_to_moves(node["move_history"])[-1]
+        # Iterate through the legal moves
         for legal_move in legal_moves:
+            # Check if the move is a legal move
             if move == legal_move:
                 print("made move " + str(move_to_notation(legal_move)))
+                # The legal move is made, because it has extra properties (e.g. pawn promotion or castling)
+                # while the move converted from notation is a simple move without special booleans
                 board.make_move(legal_move)
+                # Check if the move should be displayed
                 if show:
                     # Display the board based on the state, selected position and highlighted squares
                     display_board(board, screen, (), [])
-
                     # Pygame refresh
                     p.display.flip()
                     clock.tick(30)
-
+    # Get new legal moves (the state changed)
     legal_moves = board.get_legal_moves()
+    # Check if the current node has every possible child => if not then we stop the selection and expand
     if len(node["children"]) < len(legal_moves):
         print("Legal moves: " + str([move_to_notation(move) for move in legal_moves]))
         print("Length of children: " + str(len(node["children"])))
         print("Found something unexplored")
         return node
 
+    # Get the child with the best ucb
+    # Initially the max ucb is -infinity so there will be a node which is higher
     max_ucb = float("-inf")
+    # Keeps track of the best child
     best_child = None
+    # Iterate through all the children of the current node
     for child in node["children"]:
+        # Get the ucb value of the current child
         current_ucb = ucb_val(child)
+        # Check if there is a new best child
         if current_ucb > max_ucb:
+            # If so, update the max ucb and the best child
             max_ucb = current_ucb
             best_child = child
+
+    # Recursion until the case above
     return selection(best_child, board, screen, clock, show)
 
 
+# Expand a new child node to the node passed in, after the selection
 def expansion(node, board):
+    # Get the legal moves
     legal_moves = board.get_legal_moves()
+    # Keeps track of the already expanded moves from node (in Move format)
     expanded_moves = []
+    # Keeps track of the unexpanded moves from node (in Move format)
     unexpanded_moves = []
-
+    # Iterate through all the children from node
     for child in node["children"]:
+        # Append the move conversion to the expanded moves
         expanded_moves.append(notation_list_to_moves(child["move_history"])[-1])
+    # Iterate through the legal moves
     for move in legal_moves:
+        # Check if the move is already in the expanded moves
         if move not in expanded_moves:
+            # Append it to the unexpanded moves if not
             unexpanded_moves.append(move)
+
     print("Unexpanded moves " + str([move_to_notation(m) for m in unexpanded_moves]))
+    # Take a random unexpanded move to expand it
     random_expansion_move = find_random_move(unexpanded_moves)
 
+    # Check if something went wrong
     if random_expansion_move is None:
         raise Exception("Random expansion move is None")
 
+    # Append the new node to the children of the old node
     node["children"].append({
         "move_history": node["move_history"] + [move_to_notation(random_expansion_move)],
         "parent_visits": node["visits"],
@@ -474,12 +522,17 @@ def expansion(node, board):
         ]
     })
 
+    # Return the index of the new child node
     return len(node["children"]) - 1
 
 
+# Simulate to end of the game
 def simulation(board, screen, clock, show):
+    # Get the legal moves from current board state
     legal_moves = board.get_legal_moves()
+    # Check if the game ended
     if board.checkmate or board.stalemate:
+        # Return the correct result in a number
         if board.checkmate and board.white_move:
             print("Simulated Win Black")
             return -1
@@ -491,11 +544,15 @@ def simulation(board, screen, clock, show):
             return 0
 
     else:
-
+        # If not the simulation continues
+        # Pick a random legal move
         random_move = find_random_move(legal_moves)
+        # Check if something went wrong
         if random_move is None:
             raise Exception("Random move is None")
+        # Make the move
         board.make_move(random_move)
+        # Check if the move should be displayed
         if show:
             # Display the board based on the state, selected position and highlighted squares
             display_board(board, screen, (), [])
@@ -503,13 +560,22 @@ def simulation(board, screen, clock, show):
             # Pygame refresh
             p.display.flip()
             clock.tick(30)
+        # Recursion until the game ends
         return simulation(board, screen, clock, show)
 
 
+# Update the values in the tree based on the result
+# label_node : basically the first node in the tree
+# simulated_node : the node form which the game was simulated
+# result : number contains information how the simulation ended
 def backpropagation(result, label_node, simulated_node):
+    # Set the current node for iterative purposes
     current_node = label_node
+    # Keeps track of the current player
     whites_turn = True
+    # Iterate down the tree until we reach the simulated node
     while current_node["move_history"] != simulated_node["move_history"]:
+        # Update the values of the current node
         current_node["visits"] += 1
         if result == 0:
             current_node["win"] += 0.5
@@ -517,13 +583,18 @@ def backpropagation(result, label_node, simulated_node):
             current_node["win"] += 1 if whites_turn else 0
         else:
             current_node["win"] += 1 if not whites_turn else 0
+        # Update the player
         whites_turn = not whites_turn
-
+        # Iterate through all the children of the current node to find the correct path to the simulated node
         for child in current_node["children"]:
+            # Update the child parent visits
             child["parent_visits"] += 1
+            # Check if the child is the next in the correct path
             if child["move_history"] == simulated_node["move_history"][:len(child["move_history"])]:
+                # If so, set the current node
                 current_node = child
 
+    # Update the values of the simulated / current node
     current_node["visits"] += 1
     if result == 0:
         current_node["win"] += 0.5
