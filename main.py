@@ -166,7 +166,7 @@ def main():
     # Player 1 (true if human, false if ai)
     player1 = True
     # Player 2 (ture if human, false if ai)
-    player2 = False
+    player2 = True
     # Keeps track of the current selected position (row, column)
     selected_pos = ()
     # Keeps track of the legal moves in the current position
