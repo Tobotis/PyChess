@@ -164,7 +164,7 @@ def main():
     # Moved boolean (set to true for 1 iteration if moved)
     moved = False
     # Player 1 (true if human, false if ai)
-    player1 = True
+    player1 = False
     # Player 2 (ture if human, false if ai)
     player2 = True
     # Keeps track of the current selected position (row, column)
@@ -194,7 +194,10 @@ def main():
                     player2 and not board.white_move)) and not moved:  # Its a human turn
                 # Update variables with handle_human_turn
                 moved, highlighted, selected_pos = handle_human_turn(event, board, legal_moves, selected_pos,
-                                                                     highlighted)
+                                                             highlighted)
+            # Pressed Mouse Button even though its not his turn
+            elif event.type == p.MOUSEBUTTONDOWN:
+                pass
 
         # Display the board based on the state, selected position and highlighted squares
         display_board(board, screen, selected_pos, highlighted)

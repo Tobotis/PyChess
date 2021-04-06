@@ -77,9 +77,9 @@ def get_value_of_board(board):
     for move in board.move_history:
         # REWARD CASTLING
         if move.is_castle and move.piece == 6:
-            value += 25
+            value += 15
         elif move.is_castle and move.piece == 16:
-            value -= 25
+            value -= 15
 
     return value
 
