@@ -85,7 +85,7 @@ def get_value_of_board(board):
 
 
 # Uses the best algorithm to find a move
-def find_best_move(board, legal_moves, use_openings=True):
+def find_best_move(board, legal_moves, speed, use_openings=True, ):
     # Counts the number of calculated positions calls
     global position_counter
     position_counter = 0
@@ -118,7 +118,8 @@ def find_best_move(board, legal_moves, use_openings=True):
     # Shuffle the list so there is variety
     random.shuffle(legal_moves)
     # Return the min max algorithm
-    return find_min_max_alpha_beta(5, legal_moves, board, float("-inf"), float("inf"), True)
+    print(speed//len(legal_moves))
+    return find_min_max_alpha_beta(speed//len(legal_moves) if speed//len(legal_moves) > 4 else 4, legal_moves, board, float("-inf"), float("inf"), True)
 
 
 # Return a random move out of legal_moves

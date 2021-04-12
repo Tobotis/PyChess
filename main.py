@@ -219,7 +219,7 @@ def main():
         if not (player1 and board.white_move) and not (player2 and not board.white_move):
             # Find the best move
 
-            move = Ai.find_best_move(board, legal_moves)
+            move = Ai.find_best_move(board, legal_moves, 100)
             if move is not None:
                 board.make_move(move)
                 moved = True
