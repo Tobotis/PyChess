@@ -118,7 +118,6 @@ def find_best_move(board, legal_moves, speed, use_openings=True, ):
     # Shuffle the list so there is variety
     random.shuffle(legal_moves)
     # Return the min max algorithm
-    print(speed//len(legal_moves))
     return find_min_max_alpha_beta(speed//len(legal_moves) if speed//len(legal_moves) > 4 else 4, legal_moves, board, float("-inf"), float("inf"), True)
 
 
