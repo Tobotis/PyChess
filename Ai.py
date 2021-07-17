@@ -372,7 +372,7 @@ def train_monte_carlo_tree(board, screen, clock, show=False):
         p.display.flip()
         clock.tick(30)
     # Number of iterations of the training
-    training_cycles = 100
+    training_cycles = 5000
     # Saving rate (How often the file should be saved
     saving_rate = 50
     # Iteration counter (for debug purposes)
